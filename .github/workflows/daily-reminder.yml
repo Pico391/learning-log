@@ -1,0 +1,24 @@
+name: Daily Learning Reminder
+
+on:
+  schedule:
+    # UTC 0:00 = Beijing 8:00 AM, every day
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允许手动触发测试
+
+jobs:
+  push-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run daily push script
+        env:
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+        run: python automation/daily_push.py
