@@ -353,8 +353,8 @@ def get_phase(week_num):
         return 3
 
 
-def build_message():
-    """构建推送消息"""
+def build_message_static():
+    """构建推送消息（写死数据兜底版）"""
     week_num = get_week_num()
     if week_num > TOTAL_WEEKS:
         week_num = TOTAL_WEEKS
@@ -477,8 +477,16 @@ def main():
         print("ERROR: No SERVERCHAN_KEY found in env or config files")
         return 1
 
-    # 构建消息
-    title, desp = build_message()
+    # 构建消息：优先动态生成（读 git 活跃度 + mastery），失败回退写死数据
+    try:
+        import task_engine
+        repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        data = task_engine.generate_today(repo)
+        title, desp = task_engine.to_markdown(data)
+        print("Using DYNAMIC task generation (based on your GitHub commits).")
+    except Exception as e:
+        print(f"Dynamic generation failed ({e}), fallback to static.")
+        title, desp = build_message_static()
 
     print(f"Pushing: {title}")
     print(f"Content length: {len(desp)} chars")
