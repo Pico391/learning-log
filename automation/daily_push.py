@@ -87,7 +87,7 @@ DAILY_TASKS = {
             {"focus": "CAD复杂零件", "tasks": ["【30min】CAD:画法兰盘完整图", "【20min】标注齐全(尺寸+公差+粗糙度)", "【10min】Git提交"]},
             {"focus": "暑假总结", "tasks": ["【25min】写暑假学习总结(Markdown)", "【20min】整理GitHub仓库结构", "【10min】Git提交"]},
             {"focus": "项目巩固", "tasks": ["【30min】用文件I/O+OOP写小型项目(记账本:存取记录到文件)", "【10min】Git提交"]},
-            {"focus": "休息+准备开学", "tasks": ["【自由】休息", "【20min】准备开学物品", "【10min】预习C语言(翁恺课程简介)"]},
+            {"focus": "开学前启动C", "tasks": ["【25min】装Dev-C++/VSCode,看翁恺C第1集", "【20min】写第一个hello.c并编译运行", "【15min】准备开学物品", "【10min】Git提交"]},
         ]
     },
     7: {
@@ -98,8 +98,8 @@ DAILY_TASKS = {
             {"focus": "C基础语法", "tasks": ["【25min】看翁恺第2集:变量/数据类型", "【20min】练习:声明int/float/char变量并printf打印", "【10min】Git提交"]},
             {"focus": "C输入输出", "tasks": ["【25min】看翁恺第3集:printf/scanf", "【20min】练习:scanf读入两数求和并输出", "【10min】Git提交"]},
             {"focus": "调整时间表", "tasks": ["【20min】按课表调整每日学习时间", "【15min】确定每天2-3小时学习窗口(如晚7-10点)", "【10min】Git提交"]},
-            {"focus": "C运算符", "tasks": ["【25min】学C运算符(和Python对比:&&/||/!等)", "【20min】练习:算术/关系/逻辑运算各5题", "【10min】Git提交"]},
-            {"focus": "休息+复习", "tasks": ["【自由】休息", "【25min】复习本周C内容", "【10min】整理笔记"]},
+            {"focus": "C运算符", "tasks": ["【25min】学C运算符(和Python对比:&&/||/!等)", "【20min】练习:算术/关系/逻辑运算各5题", "【30min】C++初探:看一节C++简介(对比C的变化)", "【10min】Git提交"]},
+            {"focus": "休息+复习", "tasks": ["【自由】休息", "【25min】复习本周C内容", "【20min】C++初探:类与对象(对比C结构体,看翁恺/C++教程)", "【10min】整理笔记"]},
         ]
     },
     8: {
