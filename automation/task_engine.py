@@ -38,20 +38,20 @@ GIT_DIRS = {
 # 顺序即难度/进度顺序；mastery 未完成项会优先匹配关键词
 SKILL_POOL = {
     "Python": [
-        ("嵌套循环", "【25min】Python：用嵌套循环画星号三角形 + 九九乘法表（练执行过程）"),
-        ("累加器", "【20min】Python：写累加器求 1-100 和、求列表平均值（x = x + y 模式）"),
-        ("for列表", "【25min】Python：学 for 循环遍历列表，用 append 收集数据"),
-        ("函数", "【25min】Python：定义函数算圆面积/判断素数，练参数与返回"),
-        ("列表推导", "【20min】Python：用列表推导式重写温度采集题"),
-        ("字符串", "【20min】Python：字符串切片/格式化，练 f-string 输出"),
+        ("嵌套循环", "【25min】Python：练 QClaw 错题——反向打印数字（while + x%10 取个位、x//10 砍位）①打印1~10 ②九九乘法表（嵌套 for），这两道你之前卡过"),
+        ("累加器", "【20min】Python：写累加器——用户输入数字累加、输 q 退出打印总和（x = x + y，别写成 x==x+y，这是你踩过的坑）"),
+        ("for列表", "【25min】Python：练列表——创建 fruits 列表，打印第2/4个、最后2个，append 加西瓜、insert 插草莓、del 删香蕉（python_exercises 第7章）"),
+        ("分支", "【20min】Python：练 if-elif——成绩评级（>=90 A / >=80 B / >=60 C / 否则 D）+ 判断闰年（QClaw 你问过的题）"),
+        ("函数", "【25min】Python：定义函数 max_of_two / calculate(a,b,op) 加减乘除 / is_prime 判素数（python_exercises 第12章）"),
+        ("字符串", "【20min】Python：字符串——输入一句话转大小写、统计某字母次数、凯撒密码偏移一位（python_exercises 第9章）"),
     ],
     "CAD": [
-        ("尺寸标注", "【25min】CAD：给轴承图补尺寸标注 DIM（直径/半径/长度），练出图规范"),
+        ("尺寸标注", "【25min】CAD：给轴承图补尺寸标注 DIM（直径/半径/长度），练出图规范（你 8/1 画的轴承座）"),
         ("齿轮", "【30min】CAD：画齿轮——CIRCLE 外圆 + ARRAY 环形阵列 20 个齿 + TRIM 修顺"),
-        ("六角螺母", "【20min】CAD：POLYGON 画六边形 + 中心螺纹孔 + 倒角 CHAMFER"),
-        ("法兰盘", "【25min】CAD：画法兰盘——圆盘 + 中心孔 + ARRAY 阵列一圈螺栓孔"),
+        ("六角螺母", "【20min】CAD：POLYGON 画六边形 + 中心螺纹孔 + 倒角 CHAMFER（QClaw 练习8 进阶）"),
+        ("法兰盘", "【25min】CAD：画法兰盘——外圆直径100 + 内孔30 + ARRAY 阵列4个均布螺栓孔（QClaw 练习8，你画过）"),
         ("阶梯轴实战", "【30min】CAD：实际画出阶梯轴（矩形拼 + MIRROR 镜像，之前说不会，今天攻克）"),
-        ("剖视图", "【35min】CAD：画轴承座剖视图，加剖面线 HATCH"),
+        ("剖视图", "【35min】CAD：画轴承座剖视图，加剖面线 HATCH（QClaw 练习7 轴承座升级）"),
         ("导出图片", "【10min】CAD：把今天画的图导出 JPG/PNG，存 GitHub 当作品"),
     ],
     "C": [
@@ -59,7 +59,7 @@ SKILL_POOL = {
         ("变量类型", "【25min】C：变量/数据类型/printf，对比 Python"),
         ("运算符", "【25min】C：算术/关系/逻辑运算符，注意 &&/||/! 与 Python 不同"),
         ("条件", "【25min】C：if/else + switch 分支"),
-        ("循环", "【30min】C：while/for 循环，对比 Python 缩进"),
+        ("循环", "【30min】C：while/for 循环，对比 Python 缩进；练你 QClaw 错题——找第一个被7整除的数（计数器 i 必须放循环外！）"),
         ("函数", "【25min】C：函数定义、参数传递（值传递）"),
     ],
     "Arduino": [
