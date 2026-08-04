@@ -247,23 +247,84 @@ def to_markdown(data):
 MARKER = "/*__DYNAMIC_TASK__*/"
 
 
+def _extract_balanced(content, prefix):
+    """从 content 里 prefix 之后提取配平的 {...} JSON 字符串。"""
+    idx = content.find(prefix)
+    if idx < 0:
+        return None
+    i = content.find("{", idx)
+    if i < 0:
+        return None
+    depth = 0
+    for j in range(i, len(content)):
+        if content[j] == "{":
+            depth += 1
+        elif content[j] == "}":
+            depth -= 1
+            if depth == 0:
+                return content[i:j + 1]
+    return None
+
+
 def write_html_dynamic(html_path, data):
-    """把当天任务写入 HTML 占位（保留写死数据作兜底），重复运行不累积。"""
-    import re
-    block = "window.DYNAMIC_TASK = " + json.dumps(data, ensure_ascii=False) + "; " + MARKER
+    """把当天任务写入 HTML 的 DYNAMIC_TASKS（按日期 map），保留其它日期的任务不覆盖。"""
+    date_key = (data.get("date") or
+                __import__("datetime").date.today().isoformat())
     with open(html_path, encoding="utf-8") as f:
         content = f.read()
-    pattern = re.compile(
-        r"window\.DYNAMIC_TASK\s*=\s*\{.*?\};\s*" + re.escape(MARKER), re.DOTALL)
-    if pattern.search(content):
-        new = pattern.sub(block, content, count=1)
-    elif MARKER in content:
-        new = content.replace(MARKER, block, 1)
+    tasks_map = {}
+    # 读取已有的按日期任务 map（兼容旧版单条 DYNAMIC_TASK）
+    obj = _extract_balanced(content, "window.DYNAMIC_TASKS =")
+    if obj is not None:
+        try:
+            tasks_map = json.loads(obj)
+        except Exception:
+            tasks_map = {}
     else:
-        new = content.replace("</body>",
-                               "<script>" + block + "</script></body>", 1)
+        obj2 = _extract_balanced(content, "window.DYNAMIC_TASK =")
+        if obj2 is not None:
+            try:
+                old = json.loads(obj2)
+                if "date" in old:
+                    tasks_map[old["date"]] = old
+            except Exception:
+                pass
+    tasks_map[date_key] = data
+    new_block = ("window.DYNAMIC_TASKS = "
+                 + json.dumps(tasks_map, ensure_ascii=False)
+                 + ";\n" + MARKER)
+    # 定位待替换的旧块（兼容单条 / 旧单条 / 仅占位符）
+    start = content.find("window.DYNAMIC_TASKS =")
+    prefix = "window.DYNAMIC_TASKS ="
+    if start < 0:
+        start = content.find("window.DYNAMIC_TASK =")
+        prefix = "window.DYNAMIC_TASK ="
+    if start >= 0:
+        i = content.find("{", start)
+        depth = 0
+        end = i
+        for j in range(i, len(content)):
+            if content[j] == "{":
+                depth += 1
+            elif content[j] == "}":
+                depth -= 1
+                if depth == 0:
+                    end = j + 1
+                    break
+        k = end
+        while k < len(content) and content[k] in " ;\t\n\r":
+            k += 1
+        while content[k:k + 20].startswith("/*__DYNAMIC_TASK__*/"):
+            k += 20
+        old_block = content[start:k]
+        content = content[:start] + new_block + content[k:]
+    elif MARKER in content:
+        content = content.replace(MARKER, new_block, 1)
+    else:
+        content = content.replace("</body>",
+                                   "<script>" + new_block + "</script></body>", 1)
     with open(html_path, "w", encoding="utf-8") as f:
-        f.write(new)
+        f.write(content)
 
 
 def main():

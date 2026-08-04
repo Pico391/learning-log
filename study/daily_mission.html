@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日任务 · 实习备战</title>
+<style>
+:root{
+  --bg:#f0f2f5;--card:#fff;--text:#1a1a2e;--t2:#555;--t3:#999;--bd:#e4e7ed;
+  --p1:#185FA5;--p1b:#E6F1FB;--p1d:#B5D4F4;
+  --p2:#0F6E56;--p2b:#E1F5EE;--p2d:#9FE1CB;
+  --p3:#854F0B;--p3b:#FAEEDA;--p3d:#FAC775;
+  --gold:#D4A017;--xp:#534AB7;--xpb:#EEEDFE;
+  --ok:#16a34a;--okb:#dcfce7;
+  --r:14px;--rs:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.65;font-size:15px;
+  min-height:100vh;
+}
+.hero{
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 40%,#0F6E56 100%);
+  color:#fff;padding:32px 24px 28px;text-align:center;position:relative;overflow:hidden;
+}
+.hero::before{content:"";position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(212,160,23,0.18),transparent 70%)}
+.hero::after{content:"";position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(83,74,183,0.2),transparent 70%)}
+.hero .badge-row{display:flex;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;position:relative;z-index:1}
+.hero .badge{font-size:12px;padding:4px 12px;border-radius:20px;font-weight:600;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25)}
+.hero .badge.gold{background:rgba(212,160,23,0.25);border-color:rgba(212,160,23,0.5);color:#FFD700}
+.hero h1{font-size:24px;font-weight:800;letter-spacing:1px;position:relative;z-index:1}
+.hero .date{font-size:14px;opacity:0.85;margin-top:4px;position:relative;z-index:1}
+.hero .streak{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:rgba(212,160,23,0.2);border:1px solid rgba(212,160,23,0.4);padding:6px 16px;border-radius:20px;font-size:14px;font-weight:600;color:#FFD700;position:relative;z-index:1}
+
+.progress-wrap{max-width:820px;margin:0 auto;padding:20px 20px 0}
+.progress-bar{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.progress-bar .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.progress-bar .label{font-size:14px;font-weight:600}
+.progress-bar .pct{font-size:20px;font-weight:800;color:var(--xp)}
+.progress-bar .track{height:12px;background:#eef0f3;border-radius:6px;overflow:hidden;position:relative}
+.progress-bar .fill{height:100%;background:linear-gradient(90deg,var(--p1),var(--p2),var(--gold));border-radius:6px;transition:width 0.8s ease;position:relative}
+.progress-bar .fill::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:shine 2.5s infinite}
+@keyframes shine{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.progress-bar .phases{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--t3)}
+.progress-bar .phases span.active{color:var(--text);font-weight:700}
+
+.ctn{max-width:820px;margin:0 auto;padding:20px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:20px 22px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+.card-title{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title .icon{font-size:20px}
+.card-title .tag-sm{font-size:11px;padding:2px 10px;border-radius:20px;font-weight:600;margin-left:auto}
+
+.phase-tag.p1{background:var(--p1b);color:var(--p1)}
+.phase-tag.p2{background:var(--p2b);color:var(--p2)}
+.phase-tag.p3{background:var(--p3b);color:var(--p3)}
+
+/* Day selector */
+.day-selector{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.day-btn{
+  flex:1;min-width:42px;padding:10px 6px;border-radius:var(--rs);border:1px solid var(--bd);
+  background:#fafbfc;text-align:center;cursor:pointer;transition:all 0.2s;font-weight:600;font-size:13px;
+}
+.day-btn:hover{border-color:var(--xp);background:#fcfcff}
+.day-btn.active{background:var(--xp);color:#fff;border-color:var(--xp)}
+.day-btn.today{border-color:var(--gold);border-width:2px}
+.day-btn .dn{font-size:13px}
+.day-btn .df{font-size:9px;color:var(--t3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.day-btn.active .df{color:rgba(255,255,255,0.7)}
+
+/* Task list */
+.task-list{display:flex;flex-direction:column;gap:10px}
+.task-item{
+  display:flex;align-items:flex-start;gap:14px;padding:14px 16px;
+  background:#fafbfc;border:1px solid var(--bd);border-radius:var(--rs);
+  cursor:pointer;transition:all 0.2s;user-select:none;
+}
+.task-item:hover{border-color:var(--xp);background:#fcfcff}
+.task-item.done{background:var(--okb);border-color:var(--ok)}
+.task-item.done .task-name{text-decoration:line-through;color:var(--t3)}
+.task-item.done .task-xp{opacity:0.5}
+.check{
+  width:24px;height:24px;border-radius:6px;border:2px solid var(--t3);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all 0.2s;font-size:14px;color:#fff;margin-top:1px;
+}
+.task-item.done .check{background:var(--ok);border-color:var(--ok)}
+.task-content{flex:1;min-width:0}
+.task-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.task-desc{font-size:12px;color:var(--t2)}
+.task-xp{font-size:12px;font-weight:700;color:var(--xp);background:var(--xpb);padding:3px 10px;border-radius:20px;flex-shrink:0;white-space:nowrap;margin-top:1px}
+
+/* Time summary */
+.time-summary{text-align:center;font-size:13px;color:var(--t2);margin-bottom:14px;padding:8px;background:linear-gradient(135deg,#f8faff,#f0f9f4);border-radius:var(--rs);border:1px dashed var(--bd)}
+.time-summary b{color:var(--xp)}
+
+.week-goal{font-size:14px;color:var(--text);background:linear-gradient(135deg,#f8faff,#f0f9f4);padding:14px 16px;border-radius:var(--rs);border:1px dashed var(--bd)}
+.week-goal b{color:var(--xp)}
+
+.tool-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.tool-table th,.tool-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--bd)}
+.tool-table th{background:#fafbfc;font-weight:600;color:var(--t2);font-size:12px}
+.tool-table td:first-child{font-weight:600}
+.tool-table .yes{color:var(--ok);font-weight:600}
+.tool-table .no{color:#dc2626;font-weight:600}
+.tool-table .mid{color:var(--gold);font-weight:600}
+.tool-note{font-size:12px;color:var(--t2);background:#fffbeb;border:1px solid #fde68a;border-radius:var(--rs);padding:10px 14px;margin-top:10px;line-height:1.6}
+.tool-note b{color:var(--text)}
+
+.achievements{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.ach{text-align:center;padding:14px 8px;border-radius:var(--rs);border:1px solid var(--bd);background:#fafbfc}
+.ach.unlocked{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:var(--gold)}
+.ach.locked{opacity:0.45;filter:grayscale(0.6)}
+.ach .em{font-size:28px;margin-bottom:4px}
+.ach .nm{font-size:11px;font-weight:600;color:var(--t2)}
+.ach.unlocked .nm{color:var(--text)}
+
+.quote{text-align:center;font-size:14px;color:var(--t2);font-style:italic;padding:16px 20px;background:linear-gradient(135deg,#f8faff,#f0f9f4);border-radius:var(--r);border:1px solid var(--bd)}
+.quote b{color:var(--text);font-style:normal}
+
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.link-btn{font-size:13px;padding:8px 14px;border-radius:var(--rs);background:var(--xpb);color:var(--xp);font-weight:600;text-decoration:none;border:1px solid #ddd6fe;transition:all 0.2s}
+.link-btn:hover{background:var(--xp);color:#fff}
+
+.celebrate{display:none;text-align:center;padding:20px;background:linear-gradient(135deg,#dcfce7,#fef3c7);border:2px solid var(--gold);border-radius:var(--r);margin-bottom:16px}
+.celebrate.show{display:block;animation:pop 0.5s}
+@keyframes pop{0%{transform:scale(0.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.celebrate .em{font-size:36px}
+.celebrate .txt{font-size:16px;font-weight:700;margin-top:6px;color:var(--text)}
+.celebrate .sub{font-size:13px;color:var(--t2);margin-top:4px}
+
+@media(max-width:600px){
+  .hero h1{font-size:20px}
+  .progress-bar .phases{font-size:10px}
+  .task-item{padding:12px}
+  .day-btn{min-width:36px;padding:8px 4px}
+  .day-btn .df{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge-row">
+    <span class="badge" id="phaseBadge">加载中...</span>
+    <span class="badge gold" id="weekBadge">第 - 周</span>
+  </div>
+  <h1>每日任务 · 实习备战</h1>
+  <div class="date" id="todayDate">--</div>
+  <div class="streak" id="streakBox">连续打卡 0 天</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar">
+    <div class="top">
+      <span class="label">6个月总进度</span>
+      <span class="pct" id="totalPct">0%</span>
+    </div>
+    <div class="track"><div class="fill" id="totalFill" style="width:0%"></div></div>
+    <div class="phases">
+      <span id="ph1">基础巩固 W1-8</span>
+      <span id="ph2">核心技能 W9-16</span>
+      <span id="ph3">项目求职 W17-24</span>
+    </div>
+  </div>
+</div>
+
+<div class="ctn">
+  <div class="celebrate" id="celebrate">
+    <div class="em">🎉</div>
+    <div class="txt">今日全部任务完成！</div>
+    <div class="sub" id="celebrateSub">干得漂亮，pico！明天继续。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon">📅</span>
+      <span>本周时间表</span>
+      <span class="tag-sm phase-tag" id="todayTag">--</span>
+    </div>
+    <div class="day-selector" id="daySelector"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon">⚔️</span>
+      <span id="taskCardTitle">今日任务</span>
+    </div>
+    <div class="time-summary" id="timeSummary"></div>
+    <div class="task-list" id="taskList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon">🎯</span>
+      <span>本周目标</span>
+    </div>
+    <div class="week-goal" id="weekGoal">加载中...</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon">🛠️</span>
+      <span>软件工具方案（CAD）</span>
+    </div>
+    <table class="tool-table">
+      <thead><tr><th>对比项</th><th>中望 CAD（你现在用）</th><th>AutoCAD</th></tr></thead>
+      <tbody>
+        <tr><td>免费情况</td><td class="yes">有免费版</td><td class="no">无免费版（试用30天/学生版需认证）</td></tr>
+        <tr><td>文件格式</td><td class="yes">DWG 完全兼容</td><td class="yes">DWG 原生</td></tr>
+        <tr><td>操作习惯</td><td class="yes">与 AutoCAD 90% 相同</td><td class="yes">行业标杆</td></tr>
+        <tr><td>大厂认可</td><td class="mid">国企/事业单位高（国产替代）</td><td class="yes">外企/大厂主流</td></tr>
+        <tr><td>面试表述</td><td colspan="2" style="font-size:12px;color:var(--t2)">简历写"AutoCAD / 中望CAD"，面试说"用中望学的，操作和AutoCAD一致，能快速上手"</td></tr>
+      </tbody>
+    </table>
+    <div class="tool-note">
+      <b>结论：用中望CAD学完全没问题。</b> 核心技能（画图、标注、图层、三视图）是通用的。坚持用中望学完，技能可迁移。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon">🏆</span>
+      <span>成就徽章</span>
+      <span class="tag-sm" id="achCount" style="background:var(--xpb);color:var(--xp)">0/8</span>
+    </div>
+    <div class="achievements" id="achBox"></div>
+  </div>
+
+  <div class="quote" id="quoteBox">--</div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon">📚</span>
+      <span>学习资源快捷入口</span>
+    </div>
+    <div class="links">
+      <a class="link-btn" href="https://www.bilibili.com" target="_blank">B站（网课）</a>
+      <a class="link-btn" href="https://www.bilibili.com/video/av4050443" target="_blank">小甲鱼Python课</a>
+      <a class="link-btn" href="https://www.bilibili.com/video/BV15V4y1A7d1" target="_blank">翁恺C语言课</a>
+      <a class="link-btn" href="https://www.bilibili.com/video/BV1Hc411M7SE" target="_blank">大梦CAD课</a>
+      <a class="link-btn" href="https://github.com" target="_blank">GitHub</a>
+      <a class="link-btn" href="https://www.zwsoft.cn" target="_blank">中望CAD官网</a>
+      <a class="link-btn" href="https://www.shixiseng.com" target="_blank">实习僧</a>
+      <a class="link-btn" href="https://www.zhipin.com" target="_blank">BOSS直聘</a>
+    </div>
+  </div>
+</div>
+
+<script>
+window.DYNAMIC_TASKS = {"2026-08-03": {"focus": "CAD 为主 · 动态生成（基于你的提交与掌握度）", "tasks": ["【25min】CAD：给轴承图补尺寸标注 DIM（直径/半径/长度），练出图规范（你 8/1 画的轴承座）", "【35min】CAD：画轴承座剖视图，加剖面线 HATCH（QClaw 练习7 轴承座升级）", "【15min】Python：对比元组 vs 列表——做《元组练习题8-3》『元组vs列表对比』专题：建 t=(1,2,3) 和 lst=[1,2,3]，改 lst[0]、试改 t[0]、lst.append，看谁报错（答案见 python_tuple_exercises.md）", "【10min】Git：把今天作品 add/commit/push 到 learning-log（保持绿格子）", "【30min】Python：练元组——做《元组练习题8-3》5道小题（创建/索引切片/不可变/解包/遍历），答案与提示见 python_tuple_exercises.md，做完点左边方框打卡"], "week": 2, "generated_by": "dynamic", "main": "CAD", "second": "Python"}, "2026-08-04": {"focus": "CAD 为主 · 字符串接力元组（基于你的提交与掌握度）", "tasks": ["【25min】CAD：给轴承图补尺寸标注 DIM（直径/半径/长度），练出图规范（延续你 8/1 画的轴承座）", "【35min】CAD：画轴承座剖视图，加剖面线 HATCH（把三视图升级成能看的工程图）", "【30min】Python：练字符串——做《字符串练习题》6道小题（索引/切片/遍历计数/拼接），答案与提示见 python_string_exercises.md，做完点左边方框打卡", "【10min】Git：把今天作品 add/commit/push 到 learning-log（保持绿格子）"], "week": 3, "generated_by": "dynamic", "main": "CAD", "second": "Python"}};
+/*__DYNAMIC_TASK__*/const START_DATE=new Date('2026-07-21');
+const TOTAL_WEEKS=24;
+const DAY_NAMES=['周一','周二','周三','周四','周五','周六','周日'];
+const DAY_SHORT=['一','二','三','四','五','六','日'];
+
+// ===== 24周每日详细任务数据 =====
+// 每周: [goal, [ [focus, [task1,task2,...]], ...7天 ]]
+// 每天4-6条任务, 带【XXmin】时间估计
+const D=[
+// ===== W1 基础巩固 =====
+["Python复习1-5章+CAD基础+GitHub",[
+["Python运算符+GitHub",["【25min】📺看小甲鱼 第6讲《Python之常用操作符》：搞懂「==」(相等判断) 与「=」(赋值) 的区别、and/or/not 与优先级","【15min】✏️练：IDLE写5个比较表达式并打印，如 3>2、'a'=='a'、5>=5 and 3<1、not 0、10%3==1，先猜结果再运行核对","【25min】📺看小甲鱼 第7讲《了不起的分支和循环1》：while 语法「while 条件:」缩进循环体，注意别写成死循环","【15min】✏️练：写3个 while 程序 ①打印1~10 ②求1~100累加和 ③猜数字游戏(1~100随机,提示大了/小了)，三个都跑通","【20min】🌐登录GitHub确认 learning-log 仓库正常，能看到绿色提交记录"]],
+["条件分支+CAD入门",["【25min】📺看小甲鱼 第7讲《了不起的分支和循环1》：if/elif/else 语法与缩进规则","【15min】✏️练：写成绩等级判断——输入分数score，>=90优秀 / >=80良好 / >=60及格 / 否则不及格，用 if-elif-else 输出","【30min】📺看大梦老师CAD 第1集《界面认识》：菜单/工具栏/命令行走出第一步","【20min】✏️练：CAD画线(LINE)、矩形(RECTANG)、圆(CIRCLE)各画3个，熟悉命令","【10min】💾Git提交"]],
+["break语句+CAD精确绘图",["【25min】📺看小甲鱼 第8讲《了不起的分支和循环2》：break 立即退出循环(配合密码重试例子)","【20min】✏️练：做练习册v2 break专项前2题，做完对照答案","【30min】📺看大梦老师CAD 第2集《精确绘图》：坐标输入/对象捕捉","【15min】✏️练：CAD用绝对坐标画 100×50 矩形(输入对角点坐标)","【10min】💾Git提交"]],
+["continue语句+CAD极轴",["【25min】📺看小甲鱼 第9讲《了不起的分支和循环3》：continue 跳过本次循环","【20min】✏️练：做练习册v2 continue专项后2题，做完对照答案","【25min】✏️练：CAD用极轴追踪画一条45°斜线","【15min】✏️练：CAD画圆弧(ARC)和椭圆(ELLIPSE)各1个","【10min】💾Git提交"]],
+["循环实战+CAD相切圆",["【30min】✏️练：用循环重写「温度采集」——用列表存5个温度，for遍历打印每个","【25min】✏️练：写九九乘法表(双层for嵌套)，卡住就问","【25min】✏️练：CAD画3个两两相切的圆","【10min】💾Git提交"]],
+["本周复习+图层",["【30min】✏️练：复习本周Python——重做练习册错题直到全对","【30min】✏️练：CAD重画轴承座，按轮廓/中心线/标注分3个图层","【15min】📝整理本周笔记","【10min】💾Git提交所有代码"]],
+["休息+预习",["【自由】休息/灵活机动","【20min】📺预习Python第7章列表——看小甲鱼 第10讲《列表1》前半段","【5min】🌐看看GitHub绿色格子"]],
+]],
+// ===== W2 =====
+["Python第7章列表+CAD修剪/标注",[
+["列表入门",["【25min】📺看小甲鱼 第10讲《列表：一个打了激素的数组1》：创建列表、索引访问、len()","【15min】✏️练：IDLE创建3个列表(数字/字符串/混合)，用正/负索引访问第1个和最后1个","【15min】✏️练：列表切片练习 nums[1:3]、nums[-2:]、nums[:2]，打印结果理解左闭右开","【10min】💾Git提交"]],
+["列表增删改+CAD",["【25min】📺看小甲鱼 第11讲《列表2》：append/insert/remove/pop 四种增删改","【15min】✏️练：对一个列表做10次操作(5次增+5次删改)，每步打印列表看变化","【30min】📺看大梦老师CAD《TRIM修剪命令》那集：修剪多余线段","【10min】💾Git提交"]],
+["列表遍历+CAD修剪",["【20min】📺看小甲鱼 第11讲《列表2》：for循环遍历列表","【15min】✏️练：遍历列表求总和、求最大值，各写一遍","【25min】✏️练：CAD练习TRIM——先画十字交叉线，再用TRIM修剪成指定形状","【10min】💾Git提交"]],
+["列表嵌套+CAD填充",["【20min】📺看小甲鱼 第12讲《列表3》：嵌套列表(矩阵)","【15min】✏️练：创建3×3矩阵并双层for遍历打印每个元素","【25min】✏️练：CAD练习HATCH填充剖面线(先画封闭轮廓再填充)","【10min】💾Git提交"]],
+["综合练习+CAD标注",["【25min】✏️练：用列表重写学生成绩管理——存多个学生成绩，支持按名字查分、算平均分","【25min】✏️练：CAD练习DIMLINEAR线性标注，给一张图标注3个尺寸","【10min】💾Git提交"]],
+["本周复习+轴承座标注",["【25min】✏️练：复习列表所有操作(创建/切片/增删改/遍历/嵌套)，默写常用方法","【30min】✏️练：CAD给轴承座加完整标注(尺寸线+粗糙度符号)","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📺预习Python第8章元组——看小甲鱼 第13讲《元组》前半段","【5min】🌐看看本周代码量"]],
+]],
+// ===== W3 =====
+["Python元组/字典/集合+CAD三视图",[
+["元组",["【25min】📺看小甲鱼 第13讲《元组：戴上了枷锁的列表》：元组不可变","【15min】✏️练：元组打包 a,b,c=1,2,3 与解包 x,y=y,x 交换变量","【15min】✏️练：对比元组vs列表——列出哪些操作元组不行(改元素/append等)","【10min】💾Git提交"]],
+["字典入门+CAD主视图",["【25min】📺看小甲鱼 第24讲《字典：当索引不好用时1》：键值对","【15min】✏️练：创建字典 student={'name':'张三','age':18}，练习访问/修改/删除某个键","【30min】✏️练：CAD画简单零件主视图(如一个轴套)","【10min】💾Git提交"]],
+["字典进阶+CAD",["【20min】📺看小甲鱼 第25讲《字典2》：遍历/嵌套字典","【15min】✏️练：用字典存3个学生信息，for遍历打印每人姓名和成绩","【25min】✏️练：CAD继续完善主视图(加中心线/尺寸)","【10min】💾Git提交"]],
+["集合+CAD俯视图",["【20min】📺看小甲鱼 第26讲《集合：在我的世界里，你就是唯一》：去重/交并差","【15min】✏️练：集合运算——{1,2,3}&{2,3,4}交集、|并集、-差集，打印结果","【25min】✏️练：CAD画俯视图","【10min】💾Git提交"]],
+["综合+CAD左视图",["【25min】✏️练：用字典+列表写通讯录——支持增/删/改/查(按姓名查电话)","【25min】✏️练：CAD画左视图，完成长对正/高平齐/宽相等的三视图","【10min】💾Git提交"]],
+["三视图复习",["【25min】✏️练：CAD检查三视图对应关系(长对正/高平齐/宽相等)，标出错误","【20min】✏️练：复习元组/字典/集合——各写3行代码自测","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📺预习Python第9章函数——看小甲鱼 第17讲《函数：Python的乐高积木》前半段","【5min】📝整理本周笔记"]],
+]],
+// ===== W4 =====
+["Python函数/OOP入门+CAD出图",[
+["函数",["【25min】📺看小甲鱼 第17讲《函数：Python的乐高积木》：def 定义/形参实参/return","【20min】✏️练：写5个函数并调用测试——add(a,b)、is_odd(n)、max_of(a,b,c)、format_name(n)、calc_bmi(h,w)","【10min】💾Git提交"]],
+["OOP入门",["【25min】📺看小甲鱼 第36讲《类和对象：给大家介绍对象》：类与对象概念","【20min】📺看小甲鱼 第39讲《构造和析构》：__init__ 初始化方法","【15min】✏️练：写 Dog 类，含 name/age 属性，创建2个对象并打印","【10min】💾Git提交"]],
+["OOP属性方法",["【20min】📺看小甲鱼 第37讲《面向对象编程》：实例属性/类属性","【20min】📺看小甲鱼 第37讲：实例方法(self)","【15min】✏️练：给 Dog 加 bark() 和 sit() 两个方法并调用","【10min】💾Git提交"]],
+["OOP+CAD出图",["【20min】✏️练：写 Student 类(name, scores列表, avg()方法返回平均分)，建1个对象测试","【30min】📺看大梦老师CAD《布局出图/打印设置》那集","【10min】💾Git提交"]],
+["CAD出图+Git",["【25min】✏️练：CAD打印设置练习——设比例/套图框/填标题栏，输出1张PDF","【20min】✏️练：整理GitHub仓库README(写清项目清单)","【10min】💾Git提交"]],
+["本周复习",["【25min】✏️练：复习OOP概念(类/对象/属性/方法)，默写定义","【25min】✏️练：用类重写之前通讯录(把数据封装成 Contact 类)","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📺预习继承封装——看小甲鱼 第38讲《继承》前半段","【5min】🌐看看GitHub提交记录"]],
+]],
+// ===== W5 =====
+["Python OOP进阶+异常处理",[
+["继承",["【25min】📺看小甲鱼 第38讲《类和对象：继承》：子类继承父类","【20min】✏️练：写 Animal 父类(有 eat()方法)，Dog 继承它并加 bark()，创建 Dog 对象调用两个方法","【10min】💾Git提交"]],
+["多态+封装",["【25min】📺看小甲鱼 第38讲：多态与封装(私有属性_xxx)","【20min】✏️练：写继承体系 Animal→Dog/Cat，各自重写 speak()，用循环统一调用看输出不同","【10min】💾Git提交"]],
+["异常处理",["【25min】📺看小甲鱼 第31讲《异常处理1》：try/except/finally","【20min】✏️练：写代码分别触发 除零(1/0)、索引越界(a[9])、键错误(d['x'])，用 try/except 捕获并打印友好提示","【10min】💾Git提交"]],
+["自定义异常+CAD",["【20min】📺看小甲鱼 第32讲《异常处理2》：raise 自定义异常","【30min】✏️练：CAD复杂零件图练习——画一个齿轮毛坯(含轮齿轮廓)","【10min】💾Git提交"]],
+["综合练习",["【35min】✏️练：用OOP+异常写银行账户系统——BankAccount类含 deposit/withdraw，余额不足时 raise 自定义 InsufficientFunds 异常，跑通存取款与透支报错","【10min】💾Git提交"]],
+["本周复习",["【25min】✏️练：复习OOP+异常——默写 继承/多态/封装/try-except 关键词","【20min】✏️练：给本周代码补 docstring 注释","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📺预习文件I/O——看小甲鱼 第27讲《文件1》前半段","【5min】📝整理笔记"]],
+]],
+// ===== W6 =====
+["Python文件I/O+模块+CAD复杂零件(暑假收官)",[
+["文件读写",["【25min】📺看小甲鱼 第27讲《文件1》：open/read/write/close","【20min】✏️练：写 txt 文件(写入3行「第一行/第二行/第三行」)，再读回打印验证","【10min】💾Git提交"]],
+["with语句+CAD",["【20min】📺看小甲鱼 第34讲《丰富的else语句及简洁的with语句》：with 自动关文件","【15min】✏️练：用 with open(...) as f: 改写上面的写文件代码","【25min】✏️练：CAD画复杂零件(阶梯轴)","【10min】💾Git提交"]],
+["模块导入",["【20min】📺看小甲鱼 第16讲《序列》：import/from import 导入","【15min】✏️练：把常用函数拆到 mytools.py，主文件用 from mytools import 调用","【10min】💾Git提交"]],
+["CAD复杂零件",["【30min】✏️练：CAD画法兰盘完整图(圆盘+均布孔)","【20min】✏️练：标注齐全(尺寸+公差+粗糙度符号)","【10min】💾Git提交"]],
+["暑假总结",["【25min】✏️练：写暑假学习总结 Markdown(学了啥/做了啥/下一步)","【20min】✏️练：整理GitHub仓库结构(按周分文件夹)","【10min】💾Git提交"]],
+["项目巩固",["【30min】✏️练：用文件I/O+OOP写小型记账本——记录收支到文件，启动时读回，支持查余额","【10min】💾Git提交"]],
+["开学前启动C",["【25min】🛠️装 Dev-C++ 或 VSCode + C 插件，看翁恺C语言 第1集《引言》","【20min】✏️练：写第一个 hello.c 并编译运行成功","【15min】🎒准备开学物品","【10min】💾Git提交"]],
+]],
+// ===== W7 =====
+["C基础巩固+开学报到调整时间表",[
+["开学报到",["【全天】报到/安顿宿舍","【30min】认识同学和辅导员","【30min】了解课程表和教室"]],
+["C语言入门",["【20min】🛠️装 Dev-C++ 或 VSCode + C 插件","【25min】📺看翁恺C语言 第1集《计算机与程序》：C程序结构","【15min】✏️练：写 hello.c 用 printf 输出「Hello, World!」并编译运行成功","【10min】💾Git提交"]],
+["C基础语法",["【25min】📺看翁恺C语言 第2集《变量与数据类型》：int/float/char","【20min】✏️练：声明 int a=10; float b=3.14; char c='A'; 用 printf 分别打印，注意格式符 %d/%f/%c","【10min】💾Git提交"]],
+["C输入输出",["【25min】📺看翁恺C语言 第3集《运算与输入输出》：printf/scanf","【20min】✏️练：scanf 读入两个整数，求和并 printf 输出结果，测试 3 和 5 得 8","【10min】💾Git提交"]],
+["调整时间表",["【20min】📅按课表调整每日学习时间，写进日历","【15min】✏️练：确定每天2-3小时学习窗口(如晚7-10点)并固定","【10min】💾Git提交"]],
+["C运算符",["【25min】📺看翁恺C语言 第4集《运算符》：对比Python(&&/||/! 对应 and/or/not)","【20min】✏️练：算术/关系/逻辑运算各写5题，如 (3>2)&&(1<5) 等，预测并打印结果","【30min】📺C++初探：看一节C++简介(对比C的变化)","【10min】💾Git提交"]],
+["休息+复习",["【自由】休息","【25min】✏️练：复习本周C内容——默写 int/float/char 与 printf 格式符","【20min】📺C++初探：类与对象(对比C结构体，看翁恺/C++教程)","【10min】📝整理笔记"]],
+]],
+// ===== W8 =====
+["C控制流/函数/数组+Python迷你项目",[
+["C控制流",["【25min】📺看翁恺C语言 第5集《控制流》：C的 if/for/while(对比Python缩进→用{}括代码块)","【20min】✏️练：①for循环打印1~100 ②while求1~100累加和，都跑通","【10min】💾Git提交"]],
+["C函数",["【25min】📺看翁恺C语言 第6集《函数》：定义/调用/声明","【20min】✏️练：写计算器——add/sub/mul/div 四个函数，main里调用测 3+5、10-4、6*7、8/2","【10min】💾Git提交"]],
+["C数组",["【25min】📺看翁恺C语言 第7集《数组》：一维数组","【20min】✏️练：定义 int arr[5]={5,3,8,1,9}，写冒泡排序并 printf 排序后结果","【10min】💾Git提交"]],
+["Python项目",["【35min】✏️练：用OOP写学生成绩管理系统——Student类(增/删/改/查成绩)，菜单循环交互","【10min】💾Git提交"]],
+["项目完善",["【30min】✏️练：完善成绩管理系统——加文件存储(用第6周学的with)和异常捕获(输入非数字)","【10min】💾Git提交"]],
+["阶段总结",["【25min】✏️练：第一阶段总结——画思维导图梳理 Python/C/CAD 已学知识点","【20min】📝整理所有代码和笔记到GitHub","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📺预习C指针——看翁恺C语言 指针章节简介","【5min】🌐看看GitHub总提交数"]],
+]],
+// ===== W9 核心技能 =====
+["C指针基础(&和*运算符/指针与数组)",[
+["指针概念",["【25min】📺看翁恺C语言 指针章节《什么是指针》：内存地址概念","【20min】✏️练：int a=10; printf(\"%p\",&a); 打印 a 的地址，理解变量存在内存里","【10min】💾Git提交"]],
+["指针使用",["【25min】📺看翁恺C语言 指针章节《&与*》：*解引用","【20min】✏️练：int a=10,*p=&a; 用 *p=20 改值，再 printf a 看是否变成20","【10min】💾Git提交"]],
+["指针与数组",["【25min】📺看翁恺C语言 指针章节：数组名=首元素地址","【20min】✏️练：int arr[5]={1,2,3,4,5}; int *p=arr; 用 *(p+i) 遍历打印每个元素","【10min】💾Git提交"]],
+["指针运算",["【25min】📺看翁恺C语言 指针章节：p+1 指向下一个同类型元素","【20min】✏️练：指针算术——p++ 移动后打印地址差，验证等于 sizeof(int)","【10min】💾Git提交"]],
+["指针练习",["【25min】✏️练：做10道指针选择题/填空题(教材或网上找)，搞懂每题","【20min】✏️练：写 swap(int *a,int *b) 用指针交换两数，main里测 3 和 5 互换","【10min】💾Git提交"]],
+["本周复习",["【25min】✏️练：复习指针基础(&/*/指针与数组)，默写3种用法","【20min】📝画内存示意图：变量a / 指针p / 数组arr 在内存中的关系","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📺预习指针进阶——翁恺C语言 指针数组/函数指针 那几集","【5min】📝整理笔记"]],
+]],
+// ===== W10 =====
+["C指针进阶+动态内存(malloc/calloc/free)",[
+["指针数组",["【25min】📺看翁恺C语言 指针进阶《指针数组与数组指针》：区别!","【20min】✏️练：char *names[]={\"Zhang\",\"Li\",\"Wang\"}; 用指针数组按字典序排序并打印","【10min】💾Git提交"]],
+["函数指针",["【25min】📺看翁恺C语言 指针进阶《函数指针》：指向函数的指针","【20min】✏️练：定义 int (*cmp)(int,int)，指向比较函数，用它对数组排序(模拟qsort回调)","【10min】💾Git提交"]],
+["多级指针",["【25min】📺看翁恺C语言 指针进阶《二级指针》","【20min】✏️练：int a=10; int *p=&a; int **pp=&p; 用 **pp 读 a 的值，理解二级指向","【10min】💾Git提交"]],
+["动态内存",["【25min】📺看翁恺C语言《动态内存》：malloc/calloc/free(#include <stdlib.h>)","【20min】✏️练：malloc 动态分配10个int，输入并逆序输出，最后 free","【10min】💾Git提交"]],
+["内存管理",["【25min】📺看翁恺C语言《内存泄漏》：常见错误(free两次/忘记free)","【20min】✏️练：动态分配二维数组(行指针)，使用完逐行 free 再 free 行指针","【10min】💾Git提交"]],
+["本周复习",["【25min】✏️练：复习指针进阶——默写指针数组/函数指针/二级指针区别","【20min】✏️练：写综合程序——用动态内存做一个可增减的通讯录","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📺预习结构体——翁恺C语言 结构体 那几集","【5min】📝整理笔记"]],
+]],
+// ===== W11 =====
+["C结构体/文件I/O+买Arduino UNO套件",[
+["结构体",["【25min】📺看翁恺C语言 结构体集《struct定义和使用》","【20min】✏️练：定义 struct Student{char name[20];int age;float score;}; 创建1个并赋值打印","【10min】💾Git提交"]],
+["typedef+结构体指针",["【20min】📺看翁恺C语言 结构体集《typedef与结构体指针》","【20min】📺看翁恺C语言：-> 运算符访问成员","【15min】✏️练：用 typedef 给 Student 起别名，写 Student *p 用 p->age 访问成员并打印","【10min】💾Git提交"]],
+["C文件I/O",["【25min】📺看翁恺C语言 文件集《fopen/fread/fwrite/fclose》","【20min】✏️练：写文件复制程序——把 a.txt 内容复制到 b.txt，用二进制模式验证","【10min】💾Git提交"]],
+["买Arduino",["【30min】🛒淘宝买 Arduino UNO 套件(80-120元，含面包板/杜邦线/LED/电阻)","【15min】等快递期间复习C结构体","【10min】💾Git提交"]],
+["综合练习",["【35min】✏️练：用结构体+文件写通讯录——联系人数组存到 contacts.txt，重启程序能读回显示","【10min】💾Git提交"]],
+["本周复习",["【25min】✏️练：复习结构体和文件I/O——默写 struct/typedef/->/fopen 用法","【15min】📝整理本周笔记","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📺预习Arduino——打开太极创客网站看入门说明","【5min】📦期待套件到达"]],
+]],
+// ===== W12 =====
+["Arduino入门(Blink/数字I/O/模拟输入)",[
+["Arduino环境",["【20min】🛠️装 Arduino IDE，装好 UNO 驱动","【20min】✏️练：连UNO板跑示例 Blink(LED每1秒闪)，改延时为200ms让它快闪","【15min】🔍了解IDE界面：串口监视器/板型/端口设置","【10min】💾Git提交Arduino代码"]],
+["数字I/O",["【25min】📺看太极创客 Arduino 教程 实验2《数字输入输出》：pinMode/digitalWrite/digitalRead","【25min】✏️练：按键接引脚2，按下去点亮13号LED，松开熄灭(加软件消抖)","【10min】💾Git提交"]],
+["模拟输入",["【25min】📺看太极创客 Arduino 教程 实验3《模拟输入》：analogRead(0-1023)","【25min】✏️练：电位器接A0，用 map() 把读数映射到0-255控制LED亮度，串口看数值变化","【10min】💾Git提交"]],
+["串口通信",["【25min】📺看太极创客 Arduino 教程《串口通信》：Serial.begin/Serial.print","【20min】✏️练：每秒通过串口打印一次电位器读数(波特率9600)，在监视器看到数据滚动","【10min】💾Git提交"]],
+["太极创客网课",["【30min】📺看太极创客 Arduino 教程 综合实验那集","【20min】✏️练：跟着做——用串口+LED做一个「收到字符就闪灯」小程序","【10min】💾Git提交"]],
+["本周复习",["【25min】✏️练：复习Arduino基础(数字/模拟/串口)，默写 pinMode/analogRead/Serial 三件套","【20min】📝整理代码和电路图(手绘或拍照存到GitHub)","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📖预习传感器——找 HC-SR04/DHT11 数据手册看引脚定义","【5min】📝整理笔记"]],
+]],
+// ===== W13 =====
+["Arduino传感器(超声波HC-SR04/温湿度DHT11)+舵机SG90",[
+["超声波测距",["【25min】🔌接 HC-SR04 超声波模块(VCC/Trig/Echo/GND 接好)","【25min】✏️练：写测距代码——Trig发10μs脉冲，用 pulseIn 读 Echo，换算成 cm 串口显示","【10min】💾Git提交"]],
+["温湿度",["【20min】📦库管理器搜索安装 DHT sensor library","【25min】✏️练：接 DHT11，读取温湿度并串口输出(注意库初始化 dht.begin())","【10min】💾Git提交"]],
+["舵机控制",["【20min】📺看太极创客 Arduino 教程《舵机》：Servo.h 库","【25min】✏️练：用 SG90 做 0→180→0 度扫描，每步延时20ms","【10min】💾Git提交"]],
+["综合实验",["【30min】✏️练：超声波测距+舵机联动——距离<10cm 时舵机转到90度，否则回0度","【10min】💾Git提交"]],
+["数据记录",["【25min】✏️练：温湿度定时采集(每5秒一次)","【15min】✏️练：串口按 CSV 格式输出「时间,温度,湿度」，便于复制进Excel","【10min】💾Git提交"]],
+["本周复习",["【25min】✏️练：复习传感器(接线/代码/原理)，写清每个模块的引脚","【20min】📝整理电路图(拍照或手绘存GitHub)","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📖预习 LCD1602(I2C) 和电机驱动 L298N","【5min】📝整理笔记"]],
+]],
+// ===== W14 =====
+["Arduino进阶(LCD/电机驱动L298N/PWM)+智能温控风扇项目",[
+["LCD显示",["【25min】🔌接 LCD1602(I2C模块只需4根线 SDA/SCL/VCC/GND)","【25min】✏️练：显示 Hello World，再改成显示 DHT11 的温湿度","【10min】💾Git提交"]],
+["电机驱动",["【25min】📺看太极创客 Arduino 教程《L298N电机驱动》：IN1/IN2/ENA/电机接线","【25min】✏️练：控制直流电机正反转(置 IN1=HIGH,IN2=LOW 正转，反接反转)","【10min】💾Git提交"]],
+["PWM调速",["【25min】📺看太极创客 Arduino 教程《PWM》：analogWrite 0-255","【20min】✏️练：PWM 控制电机转速——从0慢慢加到大再减小，观察转速变化","【10min】💾Git提交"]],
+["温控风扇",["【30min】✏️练：DHT11 测温→PWM 控风扇(温度越高转速越快)，阈值30度启动","【10min】💾Git提交"]],
+["项目完善",["【25min】✏️练：加 LCD 显示当前温度和转速档位(0-5档)","【20min】✏️练：温度>35度时蜂鸣器响报警","【10min】💾Git提交"]],
+["项目文档",["【25min】✏️练：写项目 README(功能/接线图/代码说明)","【20min】🎥录演示视频(手机拍即可，3分钟内)","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📖预习电路基础(欧姆定律 V=IR)","【5min】📝整理笔记"]],
+]],
+// ===== W15 =====
+["电子电路基础(欧姆定律/基尔霍夫/元件识别)+SolidWorks入门",[
+["欧姆定律",["【25min】📖学 V=IR(电压=电流×电阻)","【20min】✏️练：①5V 驱动 100Ω 电阻电流多少? ②12V 电路要 20mA 电流选多大电阻? 算串联/并联总电阻各1题","【10min】💾Git提交笔记"]],
+["基尔霍夫",["【25min】📖学 KVL(回路电压和为0)/KCL(节点电流和为0)","【20min】✏️练：节点分析法算一个简单电路(如两电阻分压求中点电压)","【10min】💾Git提交"]],
+["元件识别",["【25min】📖学电阻/电容/电感/二极管外观与符号识别","【20min】✏️练：读色环电阻——棕黑红金(4环)和棕黑黑棕红(5环)各5个，写出阻值","【10min】💾Git提交"]],
+["SolidWorks入门",["【25min】🛠️装 SolidWorks(学生教育版，学校一般免费授权)","【25min】🔧学草图绘制(直线/圆/矩形/几何约束/尺寸约束)","【10min】💾Git提交"]],
+["SolidWorks拉伸",["【25min】📺看 SolidWorks 入门教程《拉伸/旋转特征》","【25min】✏️练：画一个简单零件3D——长方体(30×20×10)中间打一个Φ5通孔","【10min】💾Git提交"]],
+["本周复习",["【25min】✏️练：复习电路基础(V=IR/KVL/KCL)，默写三公式","【20min】📝整理元件识别表(电阻色环对照/电容标称法)","【10min】💾Git提交"]],
+["休息+预习",["【自由】休息","【20min】📖预习PCB设计——立创EDA 在线版怎么用","【5min】📝整理笔记"]],
+]],
+// ===== W16 =====
+["PCB设计入门(立创EDA)+阶段总结",[
+["立创EDA入门",["【25min】🌐注册立创EDA(在线版，免费)","【25min】🔧学原理图绘制——放元件/连线/标网络标号","【10min】💾Git提交"]],
+["PCB布局",["【25min】📺看立创EDA 教程《PCB布局布线规则》","【25min】✏️练：画一个 LED闪烁板原理图(用Arduino Nano+电阻+LED)，生成PCB","【10min】💾Git提交"]],
+["PCB完善",["【20min】✏️练：加丝印层(标元件名)/确认焊盘尺寸","【20min】✏️练：导出 Gerber 文件","【15min】📦了解嘉立创免费打样流程(下单注意事项)","【10min】💾Git提交"]],
+["阶段总结",["【25min】✏️练：总结第二阶段(写了篇小结：学了什么/做了什么项目)","【20min】🗂️整理GitHub仓库(分 Python/C/Arduino/CAD/SW 五个文件夹)","【10min】💾Git提交"]],
+["项目规划",["【25min】✏️练：规划第三阶段项目「智能环境监测站」功能清单","【20min】🛒列硬件清单(还缺什么模块，淘宝加购)","【10min】💾Git提交"]],
+["代码整理",["【25min】✏️练：整理所有代码——加注释/分文件夹","【20min】📝写文档(每个项目补 README)","【10min】💾Git提交"]],
+["休息+准备",["【自由】休息","【20min】📦准备项目材料(确认硬件齐全)","【5min】🚀期待项目阶段"]],
+]],
+// ===== W17 项目与求职 =====
+["项目规划(智能环境监测站:Arduino+传感器+LCD+SD卡+Python可视化)",[
+["需求文档",["【30min】✏️写需求文档(存docs/)：功能=温湿度+光照采集、LCD显示、SD卡存储、串口上传Python","【15min】📌确定技术路线：Arduino下位机采集 + Python上位机可视化","【10min】💾Git提交"]],
+["硬件确认",["【20min】✏️确认传感器/SD卡/LCD齐全，缺的立即淘宝下单(记到清单)","【25min】📐画系统框图(手绘拍照或 draw.io)，标清模块连接","【10min】💾Git提交"]],
+["软件架构",["【25min】📐设计代码架构：分成 采集/显示/存储/通信 四个 .ino 或 .py 模块","【20min】📐画数据流图：传感器→Arduino→串口→Python","【10min】💾Git提交"]],
+["数据格式",["【20min】✏️设计 CSV 存储格式：时间戳,温度,湿度,光照(写进 docs/)","【20min】✏️设计串口协议：起始符# + 温度,湿度,光照 + 校验和，定好分隔符","【15min】💾Git提交"]],
+["开发计划",["【25min】✏️制定3周时间表：W18硬件/W19上位机/W20完善","【15min】📅把每天任务拆到 GitHub Projects 或备忘录","【10min】💾Git提交"]],
+["环境搭建",["【25min】🛠️搭环境：Arduino装 DHT/SD/LCD 库；Python 装 pyserial/matplotlib","【20min】✏️测每个传感器能正常读数(串口打印验证)","【10min】💾Git提交"]],
+["休息+准备",["【自由】休息","【20min】🔍复习项目相关代码(Arduino传感器/Python串口)","【5min】🚀准备开始编码"]],
+]],
+// ===== W18 =====
+["项目硬件实现(组装+传感器代码+数据记录)",[
+["硬件组装",["【30min】🔌按框图在面包板上用杜邦线组装电路","【20min】🔌接好所有传感器(DHT11/光敏/SD卡/LCD)","【10min】📷拍照记录接线(存docs/)"]],
+["传感器代码",["【25min】✏️写温湿度采集代码(DHT11库读取)","【20min】✏️写光照采集代码(光敏电阻 analogRead 转 lux)","【10min】💾Git提交"]],
+["LCD显示",["【25min】✏️LCD 实时显示 温/湿/光 三个值","【15min】✏️加滚动显示(数据多时分屏轮播)","【10min】💾Git提交"]],
+["SD卡记录",["【25min】✏️写 SD 卡存储(用 SD.h SPI 库，建 data.csv)","【20min】✏️CSV 格式每分钟记一条(时间戳,温度,湿度,光照)","【10min】💾Git提交"]],
+["数据校验",["【25min】✏️测数据完整性——读回 SD 卡 CSV 核对行数","【15min】✏️处理异常值——传感器读失败时在 CSV 记 ERROR 而非崩溃","【10min】💾Git提交"]],
+["联调测试",["【30min】🔧全系统联调：采集→显示→存储→串口 走通","【15min】🐞修 bug 直到连续跑10分钟不崩","【10min】💾Git提交"]],
+["休息+整理",["【自由】休息","【20min】📝整理代码(给每个函数加注释)","【5min】🚀准备上位机开发"]],
+]],
+// ===== W19 =====
+["Python上位机(串口pyserial+matplotlib绘图)+文档+演示视频",[
+["串口通信",["【25min】📦pip install pyserial，学 Serial(port,9600)","【25min】✏️读 Arduino 串口数据并打印到控制台(验证能收到温湿度)","【10min】💾Git提交"]],
+["数据解析",["【25min】✏️按上一周定的协议拆字段(去掉起始符#、按逗号分、校验)","【20min】✏️存入列表(时间/温度/湿度/光照)追加","【10min】💾Git提交"]],
+["matplotlib绘图",["【25min】📦学 matplotlib 基础(plt.plot 折线图)","【25min】✏️实时绘温湿度曲线(用 matplotlib.animation 动画更新)","【10min】💾Git提交"]],
+["UI界面",["【25min】📦用 tkinter 做窗口(图表区+数据表)","【20min】✏️界面实时显示图表+最新数据表格","【10min】💾Git提交"]],
+["项目文档",["【25min】✏️写 README(功能/硬件清单/使用说明/截图)","【15min】✏️写使用说明(如何接线/装库/运行)","【10min】💾Git提交"]],
+["演示视频",["【25min】🎥录项目演示视频(手机拍，3-5分钟，展示实时曲线)","【15min】⬆️上传B站或存本地(链接记到README)","【10min】💾Git提交"]],
+["休息+整理",["【自由】休息","【20min】🔍整理项目(检查代码/文档完整性)","【5min】📦准备作品集"]],
+]],
+// ===== W20 =====
+["项目完善+GitHub作品集(GitHub Pages主页)",[
+["代码优化",["【25min】🔧优化结构(拆分模块/去冗余)","【20min】📝给每个函数写 docstring 注释","【10min】💾Git提交"]],
+["README完善",["【25min】✏️写专业 README(简介/功能/截图/GIF演示)","【15min】✏️加 安装(dependencies) 和使用说明","【10min】💾Git提交"]],
+["GitHub Pages",["【25min】🌐开启 GitHub Pages(Settings→Pages，选 main 分支)","【25min】🎨设计个人主页框架(HTML/CSS，先搭骨架)","【10min】💾Git提交"]],
+["主页内容",["【25min】✏️写自我介绍(教育背景/技能栈/项目亮点)","【20min】🖼️展示项目(截图+链接+一句话描述)","【10min】💾Git提交"]],
+["项目展示",["【25min】🖼️主页突出展示环境监测站项目","【20min】🔗加演示视频链接(B站或YouTube)","【10min】💾Git提交"]],
+["最终检查",["【25min】✏️点开所有链接确认有效(无404)","【15min】🌐测试主页在 Chrome/Edge 显示正常","【10min】💾Git提交"]],
+["休息+准备",["【自由】休息","【20min】📄准备写简历(搜3个优秀简历模板参考)","【5min】📦整理作品集"]],
+]],
+// ===== W21 =====
+["简历制作+自我介绍练习",[
+["简历框架",["【25min】📄确定结构：一页纸=基本信息/教育/技能/项目/经历","【20min】✏️写基本信息+教育背景(天水师范大学·机械电子工程·2024级)","【10min】💾Git提交"]],
+["技能描述",["【25min】✏️写技能清单：Python / C / AutoCAD(中望) / Arduino / SolidWorks，标熟练度","【20min】✏️突出项目：环境监测站(下位机Arduino+上位机Python)","【10min】💾Git提交"]],
+["项目描述",["【25min】✏️用 STAR 法则写项目(情境/任务/行动/结果)","【20min】📊量化成果：如「采集1万+数据点/实时绘图/3模块联动」","【10min】💾Git提交"]],
+["简历完善",["【25min】✏️润色语言(动词开头：设计/实现/搭建)","【20min】📄导出 PDF，调成一页纸排版","【10min】💾Git提交"]],
+["自我介绍",["【25min】✏️写1分钟自我介绍稿(背景+技能+项目+为什么想来深圳)","【20min】🗣️对着镜子练3遍并录音回听改流畅","【10min】💾Git提交"]],
+["模拟面试",["【25min】✏️准备常见问题(为什么选这专业/最大困难/职业规划)","【20min】🎥自问自答录视频，回看表情和表达","【10min】💾Git提交"]],
+["休息+准备",["【自由】休息","【20min】📝准备投递——注册 BOSS直聘/实习僧","【5min】📄整理简历终稿"]],
+]],
+// ===== W22 =====
+["公司调研+开始投递(BOSS直聘/实习僧,目标10-15家)",[
+["注册平台",["【20min】🌐注册 BOSS直聘 / 实习僧","【20min】📝完善资料(教育/技能/项目+GitHub链接)","【20min】⬆️上传简历 PDF"]],
+["公司调研",["【25min】🔍调研 汇川/英威腾/长盈精密/立讯精密 等10家(看官网招聘页)","【20min】📊整理目标清单 Excel：公司/岗位/要求/薪资/地点","【10min】📌记录岗位要求关键词"]],
+["投递Day1",["【30min】📨投3-5家保底(CAD绘图/生产工艺，可远程优先)","【20min】✏️写打招呼话术：我是谁+会Python/C/AutoCAD+想做XX","【10min】📋记录投递到清单"]],
+["投递Day2",["【30min】📨投3-5家嵌入式方向(Arduino/C开发)","【20min】✏️针对岗位微调简历(把相关技能置顶)","【10min】📋记录投递"]],
+["投递Day3",["【25min】📨投2-3家 Python/硬件测试方向","【20min】💬跟进之前投递(发消息问进度)","【10min】📋记录投递"]],
+["投递总结",["【25min】📊整理投递清单(公司/岗位/日期/状态)","【20min】📚准备面试(复习技术点)","【10min】💾Git提交进度"]],
+["休息+准备",["【自由】休息","【20min】📚准备面试(看面经)","【5min】📋整理投递记录"]],
+]],
+// ===== W23 =====
+["面试准备(技术面+行为面)+持续投递",[
+["技术面C",["【25min】📚复习C常考：指针/内存/结构体(能手写)","【25min】✏️准备代码题：手写 swap / strlen / strcpy / 冒泡排序，各写一遍","【10min】💾Git提交"]],
+["技术面Python",["【25min】📚复习Python常考：列表/字典/OOP/装饰器","【25min】✏️准备代码题：反转字符串 / 列表去重 / 字典按值排序，各写一遍","【10min】💾Git提交"]],
+["技术面Arduino",["【25min】📚复习 Arduino/传感器：pinMode/analogRead/PWM/Servo","【25min】🗣️准备项目讲解(5分钟：需求/方案/实现/难点)，对着录音讲一遍","【10min】💾Git提交"]],
+["行为面准备",["【25min】📚学 STAR 法则回答行为面","【25min】✏️准备8个故事：困难/合作/学习/失败/领导/创新/时间管理/自我驱动","【10min】💾Git提交"]],
+["模拟面试",["【30min】🎥模拟技术面(自问自答录音回听找卡壳点)","【20min】🎥模拟行为面(STAR故事逐条讲)","【10min】💾Git提交"]],
+["持续投递",["【25min】📨再投5家(拓展新公司/岗位)","【20min】💬跟进投递状态(回复HR消息)","【10min】💾Git提交"]],
+["休息+复盘",["【自由】休息","【25min】🔍复盘模拟面试(列薄弱点下周补)","【5min】📝整理笔记"]],
+]],
+// ===== W24 =====
+["积极求职+寒假面试,目标拿到实习offer",[
+["积极面试",["【全天】🎯参加所有面试机会(提前10分钟到/准备好简历)","【30min】📝面完立即复盘(记录问了啥/答得咋样)","【10min】💾Git提交"]],
+["持续投递",["【30min】📨持续投递不放弃(每天投3-5家)","【20min】🔍拓展新岗位(小红书/牛客/脉脉找机会)","【10min】💾Git提交"]],
+["面试改进",["【25min】🔧根据面试反馈补薄弱点","【25min】✏️加强练习(手写代码/项目讲解各来一遍)","【10min】💾Git提交"]],
+["寒假准备",["【25min】🚄准备去深圳/广州(订车票/查路线)","【20min】🏠找住宿(青旅/短租/同学借住，先定一周)","【10min】💾Git提交"]],
+["积极求职",["【25min】💬主动联系HR(发消息/打电话问进度)","【20min】🚀争取面试(表达强烈意愿+已具备的技能)","【10min】💾Git提交"]],
+["目标达成",["【30min】🎉拿到offer！确认入职细节(时间/薪资/地点/住宿)","【20min】📧回复 offer 接受邮件","【10min】💾Git提交"]],
+["庆祝+总结",["【自由】🎉庆祝拿到offer！","【25min】✏️总结6个月历程(写博客或发B站)","【10min】💾更新GitHub(加实习经历)"]],
+]],
+];
+
+const PHASE_NAMES={1:'基础巩固',2:'核心技能',3:'项目与求职'};
+const PHASE_RANGE={1:'W1-8',2:'W9-16',3:'W17-24'};
+
+const QUOTES=[
+'学校牌子改不了，但<b>技能深度、项目质量、投递数量</b>你能控制。',
+'每天Git提交一次，<b>绿色格子是面试官会看的坚持证据</b>。',
+'小公司不卡大一，要的是<b>"能干活、便宜、愿意学"</b>。',
+'AutoCAD是第一优先，<b>面试必问</b>。',
+'用中望CAD学完全没问题，<b>技能可迁移</b>。',
+'先去供应链中小企业实习，<b>曲线进大厂</b>。',
+'6个月后你的简历要有：Python+C+Arduino+CAD+项目+GitHub。',
+'<b>比别人早半年起步</b>，这就是你的优势。',
+'师范生退路：机械电子+教师资格证=职校老师。',
+'哪怕一行代码也要<b>每天提交</b>。'
+];
+
+const ACHIEVEMENTS=[
+{id:'first_commit',em:'🌱',nm:'首次Git提交',cond:w=>w>=1},
+{id:'python_done',em:'🐍',nm:'Python入门通关',cond:w=>w>=8},
+{id:'c_pointer',em:'⚡',nm:'征服C指针',cond:w=>w>=10},
+{id:'arduino_on',em:'🔧',nm:'点亮Arduino',cond:w=>w>=12},
+{id:'first_proj',em:'💡',nm:'完成首个项目',cond:w=>w>=14},
+{id:'pcb_done',em:'🔌',nm:'PCB设计入门',cond:w=>w>=16},
+{id:'portfolio',em:'📦',nm:'作品集上线',cond:w=>w>=20},
+{id:'offer',em:'🏆',nm:'拿到实习offer',cond:w=>w>=24}
+];
+
+// ===== 练习提示库（来自你和小龙虾/QClaw 的聊天，点开「卡住看提示」显示）=====
+const EXERCISE_HINTS = {
+  "反向打印": "用 while x>0：先打印 x%10 取最后一位，再 x=x//10 砍掉最后一位；或用列表 digits.append(x%10) 存各位，最后 reversed 倒着取。",
+  "累加": "计数/累加变量必须放在循环【外面】！x=0 写在 while 前；循环里用 x = x + y（= 赋值，不是 == 比较）。先收字符串判断是不是 'q' 再转数字，否则输入 q 会崩。",
+  "被7整除": "i=1 必须写在 while True 外面，否则每轮被重置成 1 → 死循环。i%7==0 时打印并 break。",
+  "成绩评级": "if score>=90 优秀 / elif>=80 良好 / elif>=60 及格 / else 不及格。顺序从大到小写，别反。",
+  "闰年": "(年%4==0 且 年%100!=0) 或 年%400==0 → 闰年。",
+  "九九乘法": "两层 for：for i in range(1,10): for j in range(1,i+1): print(f'{j}×{i}={i*j}',end=' ')；内层结束 print() 换行。",
+  "fruits": "列表索引从 0 开始：fruits[1] 是第2个、fruits[3] 是第4个；最后2个用切片 fruits[-2:]；append 末尾加、insert(1,'x') 第2位插、del fruits[1] 删。",
+  "calculate": "用 if/elif 判断 operator：'+' 返回 a+b、'-' 返回 a-b、'*' 返回 a*b、'/' 返回 a/b（除注意 0）。",
+  "is_prime": "小于 2 直接 False；for i in range(2,n): 只要 n%i==0 就 False；循环走完没找到因数才是素数。",
+  "凯撒": "ord(c) 把字符变数字，+1 偏移，chr() 变回字符；记得只对字母做，空格/标点原样保留（可用 isalpha 判断）。",
+  "轴承": "先画中心线定位置（CENTER 点划线）；REC 画外框/底座，C 画孔，TRIM 修剪多余线，HATCH 加剖面线。圆孔用细实线、中心线用点划线。",
+  "法兰盘": "外圆 C 直径100、内孔 C 直径30；4 个螺栓孔先画 1 个，再用 ARRAY 环形阵列 / ROTATE 旋转复制均布在直径70的圆上；十字点划线中心线。",
+  "矩形": "REC → 点第一角点 → 输入 @宽,高（如 @80,50）回车；或用坐标 0,0 和 100,50。",
+  "阶梯轴": "用矩形拼出每段宽度/高度，再 MIRROR 镜像出对称的另一半；不熟 OFFSET 就用这招。每段尺寸标清楚再拼。",
+  "齿轮": "CIRCLE 画外圆；用 ARRAY 环形阵列 20 个齿（或直接画一个齿再阵列）；TRIM 修顺内外轮廓。",
+  "元组": "创建 t=(1,2,3) 或 tuple([...])；索引 t[0] 取第1个、t[-1] 取最后；切片 t[1:3] 含头不含尾；元组不可变，改值先 list(t) 改完转回 tuple()；解包 a,b,c=t 一次取出；遍历 for x in t。单元素元组要写 (1,) 否则不是元组。",
+  "字符串": "字符串和元组一样是序列：s[0] 取第1个字符、s[-1] 取最后、s[1:3] 切片含头不含尾、for c in s 遍历每个字符。计数用 for+计数器+if（不用 .count）；拼接用 +；长度用 len(s)。方法 .upper()/.count()/.find() 是以后学的，现在先手写循环。",
+  "对比": "元组()像封死的盒子：能读 t[0]、切片、遍历，但不能改 t[0]=x（报错 'tuple' object does not support item assignment）、不能用 append；列表[]像开口袋子：能改能加。记住一个能改、一个不能改就对了。",
+};
+
+// ===== 计算 =====
+function getWeekNum(){
+  // 以 START_DATE 当周周一为第1周起点，按自然周(周一~周日)对齐，避免时区/跨日误差
+  const start=new Date(2026,6,21); // 本地时间 2026-07-21
+  const sd=(start.getDay()+6)%7;   // 0=周一; Jul21=周二→1
+  const firstMonday=new Date(2026,6,21-sd);
+  const now=new Date();
+  const a=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate());
+  const b=Date.UTC(firstMonday.getFullYear(),firstMonday.getMonth(),firstMonday.getDate());
+  const diff=Math.floor((a-b)/(7*24*60*60*1000));
+  return Math.max(1,Math.min(TOTAL_WEEKS,diff+1));
+}
+function getTodayDayIndex(){
+  const d=new Date().getDay(); // 0=Sun
+  return (d+6)%7; // 0=Mon ... 6=Sun
+}
+
+// ===== 状态 =====
+let viewWeek=getWeekNum();
+let viewDay=getTodayDayIndex();
+
+// ===== 渲染 =====
+function render(){
+  const weekNum=getWeekNum();
+  const today=new Date();
+  const dateStr=today.getFullYear()+'年'+(today.getMonth()+1)+'月'+today.getDate()+'日 '+DAY_NAMES[getTodayDayIndex()];
+
+  const w=D[viewWeek-1];
+  const phase=viewWeek<=8?1:viewWeek<=16?2:3;
+  const phaseName=PHASE_NAMES[phase];
+
+  // Header
+  const pb=document.getElementById('phaseBadge');
+  pb.textContent=phaseName+'阶段';
+  pb.className='badge';
+  document.getElementById('weekBadge').textContent='第 '+viewWeek+' 周 / 24';
+  document.getElementById('todayDate').textContent=dateStr;
+
+  // Tag
+  const tt=document.getElementById('todayTag');
+  tt.textContent=phaseName+' · W'+viewWeek;
+  tt.className='tag-sm phase-tag p'+phase;
+
+  // Progress
+  const pct=Math.min(100,Math.round((weekNum/TOTAL_WEEKS)*100));
+  document.getElementById('totalPct').textContent=pct+'%';
+  document.getElementById('totalFill').style.width=pct+'%';
+  ['ph1','ph2','ph3'].forEach((id,i)=>{
+    document.getElementById(id).className=i+1===phase?'active':'';
+  });
+
+  // Week goal
+  document.getElementById('weekGoal').innerHTML='<b>第'+viewWeek+'周目标：</b>'+w[0];
+
+  // Day selector
+  renderDaySelector();
+
+  // Tasks
+  renderTasks();
+
+  // Streak
+  renderStreak();
+
+  // Achievements
+  renderAchievements(weekNum);
+
+  // Quote
+  document.getElementById('quoteBox').innerHTML='💡 '+QUOTES[weekNum%QUOTES.length];
+}
+
+function renderDaySelector(){
+  const box=document.getElementById('daySelector');
+  box.innerHTML='';
+  const todayIdx=getTodayDayIndex();
+  const w=D[viewWeek-1];
+  for(let i=0;i<7;i++){
+    const btn=document.createElement('div');
+    btn.className='day-btn'+(i===viewDay?' active':'')+(i===todayIdx&&viewWeek===getWeekNum()?' today':'');
+    const focus=w[1][i][0];
+    btn.innerHTML='<div class="dn">'+DAY_SHORT[i]+'</div><div class="df">'+focus+'</div>';
+    btn.onclick=()=>{viewDay=i;render();};
+    box.appendChild(btn);
+  }
+}
+
+function todayKey(){
+  const t=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  return t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate());
+}
+function dateKeyOf(week,day){
+  const base=new Date(2026,6,20); // 第1周周一 = 2026-07-20
+  base.setDate(base.getDate()+(week-1)*7+day); // day: 0=周一..6=周日
+  const p=n=>String(n).padStart(2,'0');
+  return base.getFullYear()+'-'+p(base.getMonth()+1)+'-'+p(base.getDate());
+}
+function renderTasks(){
+  const w=D[viewWeek-1];
+  let dayData=w[1][viewDay];
+  let focus=dayData[0];
+  let tasks=dayData[1];
+  const isToday=viewWeek===getWeekNum()&&viewDay===getTodayDayIndex();
+  const selKey=dateKeyOf(viewWeek,viewDay);
+  const dyn=window.DYNAMIC_TASKS && window.DYNAMIC_TASKS[selKey];
+  const isDynamic=!!dyn;
+  if(isDynamic){
+    focus=dyn.focus;
+    tasks=dyn.tasks;
+  }
+
+  // Title
+  const titleEl=document.getElementById('taskCardTitle');
+  const dayLabel=isToday?'今日':DAY_NAMES[viewDay];
+  titleEl.textContent=dayLabel+'任务 · '+focus+(isDynamic?' ✨动态':'');
+
+  // Time summary
+  let totalMin=0;
+  tasks.forEach(t=>{
+    const m=t.match(/【(\d+)min】/);
+    if(m)totalMin+=parseInt(m[1]);
+  });
+  const hours=Math.floor(totalMin/60);
+  const mins=totalMin%60;
+  const timeStr=hours>0?hours+'小时'+(mins>0?mins+'分钟':''):mins+'分钟';
+  document.getElementById('timeSummary').innerHTML=isToday
+    ?'<b>今日预计学习时长：'+timeStr+'</b>（共'+tasks.length+'项任务）'
+    :'<b>'+DAY_NAMES[viewDay]+'预计学习时长：'+timeStr+'</b>（共'+tasks.length+'项任务）';
+
+  // Task list
+  const taskList=document.getElementById('taskList');
+  taskList.innerHTML='';
+  const saved=loadProgress(viewWeek,viewDay);
+
+  tasks.forEach((t,i)=>{
+    const done=saved[i]||false;
+    const m=t.match(/【(\d+)min】(.+)/);
+    const timeTag=m?m[1]+'min':'灵活';
+    const body=m?m[2]:t.replace(/【[^】]+】/,'');
+    const item=document.createElement('div');
+    item.className='task-item'+(done?' done':'');
+    let vlink=null, vtitle=null;
+    if(/看/.test(body)){
+      const fm=body.match(/小甲鱼\s*第(\d+)\s*讲/);
+      if(fm){ vlink='https://www.bilibili.com/video/av4050443?p='+fm[1]; vtitle='小甲鱼Python·第'+fm[1]+'讲'; }
+      else {
+        const km=body.match(/(翁恺C语言|大梦老师CAD|大梦老师[\u4e00-\u9fa5A-Za-z]*)/);
+        const em=body.match(/(《[^》]+》)/);
+        const kw=((km?km[1]:'')+(em?em[1]:'')).trim()||body.replace(/[📺看]/g,'').slice(0,24);
+        vlink='https://search.bilibili.com/all?keyword='+encodeURIComponent(kw);
+        vtitle='B站搜：'+kw;
+      }
+    }
+    const isEx=/练/.test(body);
+    let exHint=null;
+    if(isEx){ for(const k in EXERCISE_HINTS){ if(body.indexOf(k)>=0){ exHint=EXERCISE_HINTS[k]; break; } } }
+    let inner=`<div class='check'>${done?'✓':''}</div>`
+      +`<div class='task-content'>`
+      +`<div class='task-name'>${body}</div>`;
+    if(vlink){
+      inner+=`<a class='task-video' href='${vlink}' target='_blank' onclick='event.stopPropagation()'>▶ 去看这集（${vtitle||'视频'}）</a>`;
+    }
+    if(isEx && !done){
+      inner+=`<div class='ex-hint'>💡 做完点这打勾 · 卡住看提示</div>`
+        +`<div class='ex-tip'>${exHint?('💬 你之前在 QClaw 问过这题，思路：'+exHint):'完成后点左边方框打勾即可 ✓。某一步卡住，把报错发我，我一步步带你改。'}</div>`;
+    }
+    inner+=`<div class='task-desc'>${DAY_NAMES[viewDay]} · 预计 ${timeTag}</div>`
+      +`</div>`
+      +`<div class='task-xp'>+${Math.max(10,Math.round(60/Math.max(tasks.length,3)))} XP</div>`;
+    item.innerHTML=inner;
+    const eh=item.querySelector('.ex-hint');
+    if(eh){ eh.addEventListener('click',function(e){e.stopPropagation();eh.classList.toggle('open');}); }
+    item.onclick=()=>toggleTask(viewWeek,viewDay,i,item);
+    taskList.appendChild(item);
+  });
+
+  checkAllDone(viewWeek,viewDay);
+}
+
+function toggleTask(week,day,idx,item){
+  const saved=loadProgress(week,day);
+  saved[idx]=!saved[idx];
+  saveProgress(week,day,saved);
+  const done=saved[idx];
+  item.classList.toggle('done',done);
+  item.querySelector('.check').textContent=done?'✓':'';
+  checkAllDone(week,day);
+  renderStreak();
+  renderAchievements(getWeekNum());
+}
+
+function checkAllDone(week,day){
+  const w=D[week-1];
+  if(!w)return;
+  const tasks=w[1][day][1];
+  const saved=loadProgress(week,day);
+  const all=tasks.every((_,i)=>saved[i]);
+  const cel=document.getElementById('celebrate');
+  const isToday=week===getWeekNum()&&day===getTodayDayIndex();
+  if(all&&isToday){
+    cel.classList.add('show');
+    markTodayDone();
+  }else{
+    cel.classList.remove('show');
+  }
+}
+
+// ===== 存储 =====
+function key(week,day){return 'pico_w'+week+'_d'+day;}
+function loadProgress(week,day){
+  try{
+    const d=JSON.parse(localStorage.getItem(key(week,day))||'[]');
+    return Array.isArray(d)?d:[];
+  }catch(e){return[];}
+}
+function saveProgress(week,day,arr){
+  localStorage.setItem(key(week,day),JSON.stringify(arr));
+}
+function markTodayDone(){
+  const today=new Date().toISOString().slice(0,10);
+  const arr=JSON.parse(localStorage.getItem('pico_done_days')||'[]');
+  if(!arr.includes(today)){arr.push(today);localStorage.setItem('pico_done_days',JSON.stringify(arr));}
+}
+function getDoneDays(){
+  try{return JSON.parse(localStorage.getItem('pico_done_days')||'[]');}catch(e){return[];}
+}
+function renderStreak(){
+  const days=getDoneDays().sort();
+  let streak=0;
+  const today=new Date();
+  for(let i=0;i<400;i++){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const ds=d.toISOString().slice(0,10);
+    if(days.includes(ds)){streak++;}else if(i>0){break;}
+  }
+  document.getElementById('streakBox').textContent='🔥 连续打卡 '+streak+' 天';
+}
+
+// ===== 成就 =====
+function renderAchievements(weekNum){
+  const box=document.getElementById('achBox');
+  box.innerHTML='';
+  let unlocked=0;
+  ACHIEVEMENTS.forEach(a=>{
+    const ok=a.cond(weekNum);
+    if(ok)unlocked++;
+    const el=document.createElement('div');
+    el.className='ach '+(ok?'unlocked':'locked');
+    el.innerHTML='<div class="em">'+(ok?a.em:'🔒')+'</div><div class="nm">'+a.nm+'</div>';
+    box.appendChild(el);
+  });
+  document.getElementById('achCount').textContent=unlocked+'/'+ACHIEVEMENTS.length;
+}
+
+render();
+setInterval(render,60000);
+</script>
+</body>
+</html>
